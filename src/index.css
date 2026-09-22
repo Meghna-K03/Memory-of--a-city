@@ -90,6 +90,13 @@ body {
 .leaflet-tile-pane {
   filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.6);
 }
+/* Chromium renders hairline gaps between adjacent raster tiles (crbug.com/600120).
+   Leaflet normally hides this via mix-blend-mode, which only works against a light
+   backdrop; our dark theme forces a black background, making the seams visible.
+   Scaling tiles up slightly forces overlap so no background shows through. */
+.leaflet-tile {
+  transform: scale(1.0006);
+}
 .leaflet-control-zoom {
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   background: #151a20 !important;
