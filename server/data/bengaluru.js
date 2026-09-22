@@ -49,44 +49,6 @@ export const NEIGHBORHOODS = [
   },
 ];
 
-// Canned narrative used by the demo City Change Investigator (no live AI API configured).
-// See skills/ai-change-story/SKILL.md — never present this as confirmed causation.
-export const CHANGE_NARRATIVES = {
-  indiranagar: {
-    whatChanged:
-      "Between 2010 and 2026, Indiranagar's built-up area grew by 37%, while green cover declined from 22% to 10% of the surveyed area. The neighbourhood transitioned from predominantly residential to a mixed-use commercial and entertainment hub, with 3 transit stations now serving the area.",
-    whyItHappened: [
-      'The metro corridor, completed in phases, made Indiranagar significantly more accessible from both the city centre and the airport corridor.',
-      'Rising land values attracted commercial redevelopment of older residential properties along major roads.',
-      'Growth of tech campuses in the wider East Bengaluru corridor increased demand for high-density retail, food, and hospitality in the area.',
-    ],
-    interpretation:
-      'The data suggests transit-led urban densification as a primary driver, consistent with patterns seen elsewhere when transit infrastructure arrives in already-popular areas. This cannot be confirmed as causation without controlled analysis.',
-  },
-  koramangala: {
-    whatChanged:
-      "Koramangala's commercial footprint expanded by 155% between 2010 and 2026, the fastest growth among the three studied neighbourhoods. Built-up area rose from 55% to 81%, while green space fell from 28% to 12%.",
-    whyItHappened: [
-      "Koramangala's identity as a startup district attracted repeated waves of investment in co-working, retail, and hospitality infrastructure.",
-      'Proximity to key tech corridors created sustained commercial pressure on residential land.',
-      'Zoning changes permitting mixed-use development in previously residential blocks enabled rapid commercial conversion.',
-    ],
-    interpretation:
-      "The scale of commercial growth is disproportionate relative to residential and transit growth — this could reflect the neighbourhood's role as an economic attractor for a wider catchment area beyond its own boundaries.",
-  },
-  whitefield: {
-    whatChanged:
-      'Whitefield saw the most dramatic transformation of the three neighbourhoods — built-up area more than doubled from 38% to 80%, while green cover fell from 41% to 14%. Six transit stations were added between 2015 and 2026.',
-    whyItHappened: [
-      'Large tech parks created an employment centre of national significance, driving residential demand.',
-      'A metro line extension, completed in the low 2020s, catalysed a new wave of high-density development along the transit corridor.',
-      'Loss of agricultural and peri-urban land at the periphery drove infill densification within the established area.',
-    ],
-    interpretation:
-      'The transformation pattern is consistent with a transit-arrival effect amplified by an existing employment anchor — but the speed of green-space loss warrants further environmental review.',
-  },
-};
-
 export const EVIDENCE = {
   indiranagar: [
     { type: 'Government Report', title: 'Metro Rail Phase 2 Project Report', year: 2020, desc: 'Transit authority documentation covering the corridor extension and projected ridership for Indiranagar stations.' },
@@ -107,4 +69,15 @@ export const EVIDENCE = {
 
 export function getNeighborhoodById(id) {
   return NEIGHBORHOODS.find((n) => n.id === id);
+}
+
+// Mirrors src/lib/calcChange.ts — kept in sync so the AI investigator reasons over
+// the exact same figures the UI shows. Percent change for every metric except transit
+// station count, which is reported as a raw difference.
+export function calcChange(neighborhood, fromYear, toYear, key) {
+  const from = neighborhood.data[fromYear][key];
+  const to = neighborhood.data[toYear][key];
+  if (key === 'transitStations') return to - from;
+  if (from === 0) return to === 0 ? 0 : 100;
+  return Math.round(((to - from) / from) * 100);
 }
