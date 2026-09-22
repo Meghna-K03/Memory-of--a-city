@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+@theme {
+  --color-bg-deep: #080a0d;
+  --color-bg-base: #0d1014;
+  --color-bg-subtle: #11151a;
+  --color-surface-0: #151a20;
+  --color-surface-1: #1b2027;
+  --color-surface-2: #222831;
+  --color-text-primary: #f0efe8;
+  --color-text-secondary: #8a9099;
+  --color-text-muted: #4b5360;
+  --color-amber: #e8a020;
+  --color-amber-dim: rgba(232, 160, 32, 0.15);
+  --color-amber-border: rgba(232, 160, 32, 0.3);
+  --color-green: #3dad6e;
+  --color-green-dim: rgba(61, 173, 110, 0.12);
+  --color-red: #e05252;
+  --color-red-dim: rgba(224, 82, 82, 0.12);
+  --color-blue: #60a5fa;
+  --color-blue-dim: rgba(96, 165, 250, 0.12);
+  --color-purple: #c084fc;
+  --color-purple-dim: rgba(192, 132, 252, 0.12);
+  --color-border-subtle: rgba(255, 255, 255, 0.07);
+  --color-border-light: rgba(255, 255, 255, 0.12);
+  --font-display: 'Manrope', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #080a0d;
+  color: #f0efe8;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#root > * {
+  animation: page-fade-in 0.35s ease both;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.leaflet-container {
+  background: #080a0d !important;
+  font-family: 'Inter', sans-serif;
+}
+/* Standard OSM tiles are light by default; invert them to match the app's dark theme
+   without depending on a paid/key-gated dark tile provider. */
+.leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.6);
+}
+.leaflet-control-zoom {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: #151a20 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 6px !important;
+  overflow: hidden;
+}
+.leaflet-control-zoom a {
+  background: #151a20 !important;
+  color: #8a9099 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.leaflet-control-zoom a:hover {
+  background: #1b2027 !important;
+  color: #f0efe8 !important;
+}
+.leaflet-control-attribution {
+  background: rgba(8, 10, 13, 0.7) !important;
+  color: #4b5360 !important;
+  font-size: 10px !important;
+  backdrop-filter: blur(4px);
+}
+.leaflet-control-attribution a {
+  color: #8a9099 !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #151a20 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f0efe8 !important;
+}
+.leaflet-tooltip {
+  background: #151a20 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f0efe8 !important;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
