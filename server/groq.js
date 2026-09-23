@@ -1,31 +1,32 @@
-import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 
-// City Change Investigator — real Gemini call. See skills/ai-change-story/SKILL.md
+// City Change Investigator — real Groq call. See skills/ai-change-story/SKILL.md
 // for the rules this must follow (no invented facts/stats/evidence, observed data
 // kept separate from interpretation, exact selected year range respected).
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 const TIMEOUT_MS = 20000;
 
 const RESPONSE_SCHEMA = {
-  type: 'OBJECT',
+  type: 'object',
   properties: {
     whatChanged: {
-      type: 'STRING',
+      type: 'string',
       description: 'Factual summary of the observed change, drawn only from the supplied data. No causal claims.',
     },
     possibleReasons: {
-      type: 'ARRAY',
-      items: { type: 'STRING' },
+      type: 'array',
+      items: { type: 'string' },
       description: 'Hedged possible explanations, each grounded in the supplied evidence. Empty array if none are supportable.',
     },
     causationAssessment: {
-      type: 'STRING',
+      type: 'string',
       description:
         'A brief, hedged synthesis of how confidently the evidence supports the possible reasons. Must explicitly say the cause cannot be established if the evidence is insufficient.',
     },
   },
   required: ['whatChanged', 'possibleReasons', 'causationAssessment'],
+  additionalProperties: false,
 };
 
 function buildPrompt({ neighborhood, fromYear, toYear, changes, evidence }) {
@@ -65,46 +66,50 @@ class ChangeStoryError extends Error {
 }
 
 export async function generateChangeStory({ neighborhood, fromYear, toYear, changes, evidence }) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    throw new ChangeStoryError('GEMINI_API_KEY is not configured on the server.', 'MISSING_API_KEY');
+    throw new ChangeStoryError('GROQ_API_KEY is not configured on the server.', 'MISSING_API_KEY');
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const groq = new Groq({ apiKey });
   const prompt = buildPrompt({ neighborhood, fromYear, toYear, changes, evidence });
 
   const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new ChangeStoryError('Gemini API request timed out.', 'TIMEOUT')), TIMEOUT_MS),
+    setTimeout(() => reject(new ChangeStoryError('Groq API request timed out.', 'TIMEOUT')), TIMEOUT_MS),
   );
 
   let response;
   try {
     response = await Promise.race([
-      ai.models.generateContent({
+      groq.chat.completions.create({
         model: MODEL,
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: RESPONSE_SCHEMA,
+        messages: [{ role: 'user', content: prompt }],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'change_story',
+            strict: true,
+            schema: RESPONSE_SCHEMA,
+          },
         },
       }),
       timeout,
     ]);
   } catch (cause) {
     if (cause instanceof ChangeStoryError) throw cause;
-    throw new ChangeStoryError(`Gemini API request failed: ${cause.message}`, 'GEMINI_ERROR');
+    throw new ChangeStoryError(`Groq API request failed: ${cause.message}`, 'PROVIDER_ERROR');
   }
 
-  const text = response.text;
+  const text = response.choices?.[0]?.message?.content;
   if (!text) {
-    throw new ChangeStoryError('Gemini returned an empty response.', 'INVALID_RESPONSE');
+    throw new ChangeStoryError('Groq returned an empty response.', 'INVALID_RESPONSE');
   }
 
   let parsed;
   try {
     parsed = JSON.parse(text);
   } catch {
-    throw new ChangeStoryError('Gemini response was not valid JSON.', 'INVALID_RESPONSE');
+    throw new ChangeStoryError('Groq response was not valid JSON.', 'INVALID_RESPONSE');
   }
 
   if (
@@ -112,7 +117,7 @@ export async function generateChangeStory({ neighborhood, fromYear, toYear, chan
     !Array.isArray(parsed.possibleReasons) ||
     typeof parsed.causationAssessment !== 'string'
   ) {
-    throw new ChangeStoryError('Gemini response did not match the expected shape.', 'INVALID_RESPONSE');
+    throw new ChangeStoryError('Groq response did not match the expected shape.', 'INVALID_RESPONSE');
   }
 
   return parsed;
