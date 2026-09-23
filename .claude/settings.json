@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/build-verify.cjs",
+            "timeout": 120,
+            "statusMessage": "Build Verification Hook: running npm run build..."
+          }
+        ]
+      }
+    ]
+  }
+}
